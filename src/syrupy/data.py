@@ -47,7 +47,7 @@ class SnapshotCollection:
 
     @property
     def has_snapshots(self) -> bool:
-        return bool(self._snapshots)
+        pass
 
     def get(self, snapshot_name: str) -> Optional["Snapshot"]:
         return self._snapshots.get(snapshot_name)
@@ -81,7 +81,7 @@ class SnapshotEmptyCollection(SnapshotCollection):
 
     @property
     def has_snapshots(self) -> bool:
-        return False
+        pass
 
 
 @dataclass
@@ -133,16 +133,16 @@ class DiffedLine:
 
     @property
     def has_snapshot(self) -> bool:
-        return self.a is not None
+        pass
 
     @property
     def has_received(self) -> bool:
-        return self.b is not None
+        pass
 
     @property
     def is_complete(self) -> bool:
-        return self.has_snapshot and self.has_received
+        pass
 
     @property
     def is_context(self) -> bool:
-        return bool(self.c)
+        pass

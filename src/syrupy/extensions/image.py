@@ -19,4 +19,4 @@ class SVGImageSnapshotExtension(SingleFileSnapshotExtension):
     file_extension = "svg"
 
     def serialize(self, data: "SerializableData", **kwargs: Any) -> bytes:
-        return str(data).encode(TEXT_ENCODING)
+        pass

@@ -71,27 +71,23 @@ class SnapshotReport:
 
     @property
     def update_snapshots(self) -> bool:
-        return bool(self.options.update_snapshots)
+        pass
 
     @property
     def warn_unused_snapshots(self) -> bool:
-        return bool(self.options.warn_unused_snapshots)
+        pass
 
     @property
     def include_snapshot_details(self) -> bool:
-        return bool(self.options.include_snapshot_details)
+        pass
 
     @cached_property
     def _collected_items_by_nodeid(self) -> dict[str, "pytest.Item"]:
-        return {item.nodeid: item for item in self.collected_items}
+        pass
 
     def _has_xfail(self, item: "pytest.Item") -> bool:
         # xfailed_key is 'private'. I'm open to a better way to do this:
-        if xfailed_key in item.stash:
-            result = item.stash[xfailed_key]
-            if result:
-                return result.run
-        return False
+        pass
 
     def __post_init__(self) -> None:
         self.__parse_invocation_args()
@@ -147,64 +143,39 @@ class SnapshotReport:
         would result in `"tests/test_file.py"` being stored as the location in a
         dictionary with `["TestClass", "test_method"]` being the test node path
         """
-
-        if self.options.keyword:
-            self._keyword_expressions.add(Expression.compose(self.options.keyword))
-        for file_or_dir in self.options.file_or_dir:
-            parts = file_or_dir.split(PYTEST_NODE_SEP)
-            package_or_filepath = parts[0].strip()
-            filepath = Path(package_or_filepath)
-            if self.options.pyargs:
-                try:
-                    mod = importlib.import_module(package_or_filepath)
-                    if mod.__file__ is not None:
-                        filepath = Path(mod.__file__)
-                except Exception:
-                    pass
-            filepath_abs = str(
-                filepath if filepath.is_absolute() else filepath.absolute()
-            )
-            self._provided_test_paths[filepath_abs] = parts[1:]
+        pass
 
     @property
     def num_created(self) -> int:
-        return self._count_snapshots(self.created)
+        pass
 
     @cached_property
     def num_failed(self) -> int:
-        return self._count_snapshots(self.failed)
+        pass
 
     @property
     def num_matched(self) -> int:
-        return self._count_snapshots(self.matched)
+        pass
 
     @property
     def num_updated(self) -> int:
-        return self._count_snapshots(self.updated)
+        pass
 
     @property
     def num_unused(self) -> int:
-        return self._count_snapshots(self.unused)
+        pass
 
     @property
     def selected_all_collected_items(self) -> bool:
-        return self._collected_items_by_nodeid.keys() == self.selected_items.keys()
+        pass
 
     @property
     def skipped_items(self) -> Iterator["pytest.Item"]:
-        return (
-            self._collected_items_by_nodeid[nodeid]
-            for nodeid in self.selected_items
-            if self.selected_items[nodeid].value == "skipped"
-        )
+        pass
 
     @property
     def ran_items(self) -> Iterator["pytest.Item"]:
-        return (
-            self._collected_items_by_nodeid[nodeid]
-            for nodeid in self.selected_items
-            if self.selected_items[nodeid]
-        )
+        pass
 
     @property
     def unused(self) -> "SnapshotCollections":
@@ -216,60 +187,7 @@ class SnapshotReport:
         Summary, if a snapshot was supposed to be run based on the invocation args
         and it was not, then it should be marked as unused otherwise ignored.
         """
-        unused_collections = SnapshotCollections()
-        for unused_snapshot_collection in self._diff_snapshot_collections(
-            self.discovered, self.used
-        ):
-            snapshot_location = unused_snapshot_collection.location
-            if self._provided_test_paths and not self._ran_items_match_location(
-                snapshot_location
-            ):
-                # Paths/Packages were provided to pytest and the snapshot location does
-                # not match any of ran tests therefore ignore this unused snapshot file
-                continue
-
-            provided_nodes = self._get_matching_path_nodes(snapshot_location)
-            if self.selected_all_collected_items and not any(provided_nodes):
-                # All collected tests were run and files were not filtered by ::node
-                # therefore the snapshot collection file at this location can be deleted
-                unused_snapshots = {
-                    snapshot
-                    for snapshot in unused_snapshot_collection
-                    if not self._skipped_items_match_name(
-                        snapshot_location=snapshot_location, snapshot_name=snapshot.name
-                    )
-                }
-                mark_for_removal = snapshot_location not in self.used
-            else:
-                unused_snapshots = {
-                    snapshot
-                    for snapshot in unused_snapshot_collection
-                    if self._selected_items_match_name(
-                        snapshot_location=snapshot_location, snapshot_name=snapshot.name
-                    )
-                    and self._provided_nodes_match_name(
-                        snapshot_location=snapshot_location,
-                        snapshot_name=snapshot.name,
-                        provided_nodes=provided_nodes,
-                    )
-                    and not self._skipped_items_match_name(
-                        snapshot_location=snapshot_location, snapshot_name=snapshot.name
-                    )
-                }
-                mark_for_removal = False
-
-            if unused_snapshots:
-                marked_unused_snapshot_collection = SnapshotCollection(
-                    location=snapshot_location
-                )
-                for snapshot in unused_snapshots:
-                    marked_unused_snapshot_collection.add(snapshot)
-                unused_collections.add(marked_unused_snapshot_collection)
-            elif mark_for_removal:
-                unused_collections.add(
-                    SnapshotUnknownCollection(location=snapshot_location)
-                )
-        return unused_collections
+        pass
 
     @property
     def lines(self) -> Iterator[str]:
@@ -281,121 +199,12 @@ class SnapshotReport:
         Re-run pytest with --snapshot-update to delete unused snapshots.
         ```
         """
-        summary_lines: list[str] = []
-        if self.num_failed and self._num_xfails < self.num_failed:
-            summary_lines.append(
-                ngettext(
-                    "{} snapshot failed.",
-                    "{} snapshots failed.",
-                    self.num_failed - self._num_xfails,
-                ).format(error_style(self.num_failed - self._num_xfails)),
-            )
-            if self._num_xfails:
-                summary_lines.append(
-                    ngettext(
-                        "{} snapshot xfailed.",
-                        "{} snapshots xfailed.",
-                        self._num_xfails,
-                    ).format(warning_style(self._num_xfails)),
-                )
-        if self.num_matched:
-            summary_lines.append(
-                ngettext(
-                    "{} snapshot passed.",
-                    "{} snapshots passed.",
-                    self.num_matched,
-                ).format(success_style(self.num_matched))
-            )
-        if self.num_created:
-            summary_lines.append(
-                ngettext(
-                    "{} snapshot generated.",
-                    "{} snapshots generated.",
-                    self.num_created,
-                ).format(green(self.num_created))
-            )
-        if self.num_updated:
-            summary_lines.append(
-                ngettext(
-                    "{} snapshot updated.",
-                    "{} snapshots updated.",
-                    self.num_updated,
-                ).format(green(self.num_updated))
-            )
-        if self.num_unused:
-            if self.update_snapshots:
-                text_singular = "{} unused snapshot deleted."
-                text_plural = "{} unused snapshots deleted."
-            else:
-                text_singular = "{} snapshot unused."
-                text_plural = "{} snapshots unused."
-            if self.update_snapshots or self.warn_unused_snapshots:
-                text_count = warning_style(self.num_unused)
-            else:
-                text_count = error_style(self.num_unused)
-            summary_lines.append(
-                ngettext(text_singular, text_plural, self.num_unused).format(text_count)
-            )
-        yield " ".join(summary_lines)
-
-        if self.num_unused:
-            yield ""
-            if self.update_snapshots or self.include_snapshot_details:
-                base_message = "Deleted" if self.update_snapshots else "Unused"
-                for snapshots, path_to_file in self.__iterate_snapshot_collection(
-                    self.unused
-                ):
-                    unused_snapshots = ", ".join(map(bold, sorted(snapshots)))
-                    yield (
-                        warning_style(gettext(base_message))
-                        + f" {unused_snapshots} ({path_to_file})"
-                    )
-            if not self.update_snapshots:
-                message = gettext(
-                    "Re-run pytest with --snapshot-update to delete unused snapshots."
-                )
-                if self.warn_unused_snapshots:
-                    yield warning_style(message)
-                else:
-                    yield error_style(message)
-
-        if self.num_created and self.update_snapshots and self.include_snapshot_details:
-            yield ""
-            for snapshots, path_to_file in self.__iterate_snapshot_collection(
-                self.created
-            ):
-                created_snapshots = ", ".join(map(bold, sorted(snapshots)))
-                yield (
-                    warning_style(gettext("Generated"))
-                    + f" {created_snapshots} ({path_to_file})"
-                )
-
-        if self.num_updated and self.update_snapshots and self.include_snapshot_details:
-            yield ""
-            for snapshots, path_to_file in self.__iterate_snapshot_collection(
-                self.updated
-            ):
-                updated_snapshots = ", ".join(map(bold, sorted(snapshots)))
-                yield (
-                    warning_style(gettext("Updated"))
-                    + f" {updated_snapshots} ({path_to_file})"
-                )
+        pass
 
     def __iterate_snapshot_collection(
         self, collection: "SnapshotCollections"
     ) -> Generator[tuple[Generator[str, None, None], str], Any, None]:
-        for snapshot_collection in collection:
-            filepath = snapshot_collection.location
-            snapshots = (snapshot.name for snapshot in snapshot_collection)
-
-            try:
-                path_to_file = str(Path(filepath).relative_to(self.base_dir))
-            except ValueError:
-                # this is just used for display, so better to fallback to
-                # something vaguely reasonable (the full path) than give up
-                path_to_file = filepath
-
-            yield (snapshots, path_to_file)
+        pass
 
     def _diff_snapshot_collections(
         self,
@@ -410,35 +219,20 @@ class SnapshotReport:
         {A{1,2}, B{3,4}, D{7,8}}  will result in a collection with the contents
         {A{}, B{}, C{5,6}}.
         """
-        diffed_snapshot_collections = SnapshotCollections()
-        for snapshot_collection1 in snapshot_collections1:
-            snapshot_collection2 = snapshot_collections2.get(
-                snapshot_collection1.location
-            ) or SnapshotCollection(location=snapshot_collection1.location)
-            diffed_snapshot_collection = SnapshotCollection(
-                location=snapshot_collection1.location
-            )
-            for snapshot in snapshot_collection1:
-                if not snapshot_collection2.get(snapshot.name):
-                    diffed_snapshot_collection.add(snapshot)
-            diffed_snapshot_collections.add(diffed_snapshot_collection)
-        return diffed_snapshot_collections
+        pass
 
     def _count_snapshots(self, snapshot_collections: "SnapshotCollections") -> int:
         """
         Count all the snapshots at all the locations in the snapshot collections
         """
-        return sum(
-            len(snapshot_collection) for snapshot_collection in snapshot_collections
-        )
+        pass
 
     def _is_matching_path(self, snapshot_location: str, provided_path: str) -> bool:
         """
         Check if a snapshot location matches the path provided by checking that the
         provided path folder is in a parent position relative to the snapshot location
         """
-        path = Path(provided_path)
-        return str(path if path.is_dir() else path.parent) in snapshot_location
+        pass
 
     def _get_matching_path_nodes(self, snapshot_location: str) -> list[list[str]]:
         """
@@ -446,11 +240,7 @@ class SnapshotReport:
         pytest on invocation. If there were no paths provided then this list should be
         empty. If there are paths without nodes provided then this is a list of empties
         """
-        return [
-            self._provided_test_paths[path]
-            for path in self._provided_test_paths
-            if self._is_matching_path(snapshot_location, path)
-        ]
+        pass
 
     def _provided_nodes_match_name(
         self,
@@ -463,35 +253,20 @@ class SnapshotReport:
         If no nodes are filtered, provided_nodes is empty, which means
         all nodes should be matched.
         """
-        if not provided_nodes:
-            return True
-        for node_path in provided_nodes:
-            if snapshot_name in ".".join(node_path):
-                return True
-        return False
+        pass
 
     def _provided_keywords_match_name(self, snapshot_name: str) -> bool:
         """
         Check that a snapshot name would have been included by the keyword
         expression parsed from the invocation arguments
         """
-        names = snapshot_name.split(".")
-        return any(
-            expr.evaluate(lambda subname: any(subname in name for name in names))
-            for expr in self._keyword_expressions
-        )
+        pass
 
     def _ran_items_match_name(self, snapshot_location: str, snapshot_name: str) -> bool:
         """
         Check that a snapshot name would match a test node using the Pytest location
         """
-        for item in self.ran_items:
-            location = PyTestLocation(item)
-            if location.matches_snapshot_location(
-                snapshot_location
-            ) and location.matches_snapshot_name(snapshot_name):
-                return True
-        return False
+        pass
 
     def _skipped_items_match_name(
         self, snapshot_location: str, snapshot_name: str
@@ -500,13 +275,7 @@ class SnapshotReport:
         Check that a snapshot name should be treated as skipped by the current session
         This being true means that it will not be deleted even if the it is unused
         """
-        for item in self.skipped_items:
-            location = PyTestLocation(item)
-            if location.matches_snapshot_location(
-                snapshot_location
-            ) and location.matches_snapshot_name(snapshot_name):
-                return True
-        return False
+        pass
 
     def _selected_items_match_name(
         self, snapshot_location: str, snapshot_name: str
@@ -515,11 +284,7 @@ class SnapshotReport:
         Check that a snapshot name should be treated as selected by the current session
         This being true means that if the snapshot was not used then it will be deleted
         """
-        if self._keyword_expressions:
-            return self._provided_keywords_match_name(snapshot_name)
-        return self._ran_items_match_name(
-            snapshot_location=snapshot_location, snapshot_name=snapshot_name
-        )
+        pass
 
     def _ran_items_match_location(self, snapshot_location: str) -> bool:
         """
@@ -527,10 +292,7 @@ class SnapshotReport:
         This being true means that if no snapshot in the collection was used then it
         should be discarded as obsolete
         """
-        return any(
-            PyTestLocation(item).matches_snapshot_location(snapshot_location)
-            for item in self.ran_items
-        )
+        pass
 
 
 @dataclass(frozen=True)
@@ -545,12 +307,8 @@ class Expression:
     code: frozenset[str] = field(default_factory=frozenset)
 
     def evaluate(self, matcher: Callable[[str], bool]) -> bool:
-        return any(map(matcher, self.code))
+        pass
 
     @staticmethod
     def compose(value: str) -> "Expression":
-        delim = " "
-        replace_str = {" or ", " and ", " not ", "(", ")"}
-        for r in replace_str:
-            value = value.replace(f" {r} ", delim)
-        return Expression(code=frozenset(value.split(delim)))
+        pass

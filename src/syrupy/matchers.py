@@ -56,25 +56,7 @@ def path_type(
     def path_type_matcher(
         *, data: "SerializableData", path: "PropertyPath"
     ) -> Optional["SerializableData"]:
-        path_str = ".".join(str(p) for p, _ in path)
-        if mapping:
-            for pattern in mapping:
-                matches = _path_match(path_str, pattern, regex)
-                if matches:
-                    for type_to_match in mapping[pattern]:
-                        if isinstance(data, type_to_match):
-                            return replacer(data, matches)
-                    if strict:
-                        raise StrictPathTypeError(
-                            gettext(
-                                "{} at '{}' of type {} does not "
-                                "match any of the expected types: {}"
-                            ).format(data, path_str, data.__class__, mapping[pattern])
-                        )
-        for type_to_match in types:
-            if isinstance(data, type_to_match):
-                return replacer(data, None)
-        return data
+        pass
 
     return path_type_matcher
 
@@ -119,13 +101,6 @@ def compose_matchers(*matchers: "PropertyMatcher") -> "PropertyMatcher":
     def _matcher(
         *, data: "SerializableData", path: "PropertyPath"
     ) -> Optional["SerializableData"]:
-        for matcher in matchers:
-            try:
-                data = matcher(data=data, path=path)
-            except StrictPathTypeError:
-                # ignore strict mode when composing matchers
-                pass
-
-        return data
+        pass
 
     return _matcher

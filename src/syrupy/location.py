@@ -59,13 +59,11 @@ class PyTestLocation:
 
     @property
     def is_item_parametrized(self) -> bool:
-        return self.nodeid.endswith("]")
+        pass
 
     @property
     def classname(self) -> str | None:
-        if self.is_doctest:
-            return None
-        return ".".join(self.nodeid.split(PYTEST_NODE_SEP)[1:-1]) or None
+        pass
 
     @property
     def nodeid(self) -> str:
@@ -80,75 +78,46 @@ class PyTestLocation:
         :raises: `AttributeError` if node has no node id
         :return: test node id
         """
-        return str(getattr(self.item, "nodeid"))  # noqa: B009
+        pass
 
     @property
     def basename(self) -> str:
-        return Path(self.filepath).stem
+        pass
 
     @property
     def snapshot_name(self) -> str:
-        if self.classname is not None:
-            return f"{self.classname}.{self.testname}"
-        return str(self.testname)
+        pass
 
     @property
     def snapshot_name_parametrized(self) -> str:
-        if self.classname is not None:
-            return f"{self.classname}.{self.nodename}"
-        return str(self.nodename)
+        pass
 
     @property
     def is_doctest(self) -> bool:
-        return self.__is_doctest(self.item)
+        pass
 
     def __is_doctest(self, node: "pytest.Item") -> bool:
-        return hasattr(node, "dtest")
+        pass
 
     def __valid_id(self, name: str) -> str:
         """
         Take characters from the name while the result would be a valid python
         identified. Example: "test_2[A]" returns "test_2" while "1_a" would return ""
         """
-        valid_id = ""
-        for char in name:
-            new_valid_id = f"{valid_id}{char}"
-            if not new_valid_id.isidentifier():
-                break
-            valid_id = new_valid_id
-        return valid_id
+        pass
 
     def __valid_ids(self, name: str) -> Iterator[str]:
         """
         Break a name path into valid name parts stopping at the first non valid name.
         Example "TestClass.test_method_[1]" would yield ("TestClass", "test_method_")
         """
-        for n in name.split("."):
-            valid_id = self.__valid_id(n)
-            if valid_id:
-                yield valid_id
-            if valid_id != n:
-                break
+        pass
 
     def __parse(self, name: str) -> str:
-        return ".".join(self.__valid_ids(name))
+        pass
 
     def matches_snapshot_name(self, snapshot_name: str) -> bool:
-        return self.__parse(self.snapshot_name) == self.__parse(snapshot_name)
+        pass
 
     def matches_snapshot_location(self, snapshot_location: str) -> bool:
-        loc = Path(snapshot_location)
-
-        if self.is_item_parametrized:
-            return self.basename == loc.stem or (
-                self.basename == loc.parent.name
-                and (
-                    loc.stem == self.snapshot_name_parametrized
-                    or loc.stem.startswith(f"{self.snapshot_name_parametrized}.")
-                    or loc.stem.startswith(f"{self.snapshot_name_parametrized}[")
-                )
-            )
-
-        # "test_file" should match "test_file.ext" or "test_file/whatever.ext", but not
-        # "test_file_suffix.ext"
-        return self.basename == loc.stem or self.basename == loc.parent.name
+        pass

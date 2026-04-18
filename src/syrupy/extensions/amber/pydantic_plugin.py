@@ -18,7 +18,7 @@ class PydanticPlugin(AmberDataSerializerPlugin):
     @classmethod
     def is_data_serializable(cls, data: "SerializableData") -> bool:
         """Check if the data is a Pydantic BaseModel instance."""
-        return isinstance(data, BaseModel)
+        pass
 
     @classmethod
     def serialize(cls, data: BaseModel, **kwargs: Any) -> str:
@@ -26,10 +26,4 @@ class PydanticPlugin(AmberDataSerializerPlugin):
 
         Uses the model's defined fields to ensure consistent ordering.
         """
-        keys = [name for name, _ in data]
-        return AmberDataSerializer.serialize_custom_iterable(
-            data=data,
-            resolve_entries=(keys, attr_getter, None),
-            separator="=",
-            **kwargs,
-        )
+        pass

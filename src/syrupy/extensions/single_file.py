@@ -50,114 +50,56 @@ class SingleFileSnapshotExtension(AbstractSyrupyExtension):
         include: Optional["PropertyFilter"] = None,
         matcher: Optional["PropertyMatcher"] = None,
     ) -> "SerializedData":
-        supported_dataclass = self.get_supported_dataclass()
-        if supported_dataclass is bytes:
-            try:
-                memoryview(data)
-            except TypeError:
-                raise TypeError(
-                    gettext(
-                        "Can't serialize '{}' to '{}'. You must convert the data first."
-                    ).format(type(data).__name__, supported_dataclass.__name__)
-                ) from None
-        return supported_dataclass(data)
+        pass
 
     @classmethod
     def get_snapshot_name(
         cls, *, test_location: "PyTestLocation", index: "SnapshotIndex" = 0
     ) -> str:
-        return cls.__clean_filename(
-            AbstractSyrupyExtension.get_snapshot_name(
-                test_location=test_location, index=index
-            )
-        )
+        pass
 
     def delete_snapshots(
         self, *, snapshot_location: str, snapshot_names: set[str]
     ) -> None:
-        Path(snapshot_location).unlink()
+        pass
 
     @classmethod
     def get_file_basename(
         cls, *, test_location: "PyTestLocation", index: "SnapshotIndex"
     ) -> str:
-        return cls.get_snapshot_name(test_location=test_location, index=index)
+        pass
 
     @classmethod
     def dirname(cls, *, test_location: "PyTestLocation") -> str:
-        original_dirname = AbstractSyrupyExtension.dirname(test_location=test_location)
-        return str(Path(original_dirname).joinpath(test_location.basename))
+        pass
 
     def read_snapshot_collection(
         self, *, snapshot_location: str
     ) -> "SnapshotCollection":
-        file_ext_len = len(self.file_extension) + 1 if self.file_extension else 0
-        filename_wo_ext = snapshot_location[:-file_ext_len]
-        basename = Path(filename_wo_ext).parts[-1]
-
-        snapshot_collection = SnapshotCollection(location=snapshot_location)
-        snapshot_collection.add(Snapshot(name=basename))
-        return snapshot_collection
+        pass
 
     def read_snapshot_data_from_location(
         self, *, snapshot_location: str, snapshot_name: str, session_id: str
     ) -> Optional["SerializableData"]:
-        try:
-            with open(
-                snapshot_location,
-                f"r{self._write_mode}",
-                encoding=self.get_write_encoding(),
-            ) as f:
-                return f.read()
-        except FileNotFoundError:
-            return None
+        pass
 
     @classmethod
     def get_supported_dataclass(cls) -> type[str] | type[bytes]:
-        if cls._write_mode == WriteMode.TEXT:
-            return str
-        return bytes
+        pass
 
     @classmethod
     def get_write_encoding(cls) -> str | None:
-        if cls._write_mode == WriteMode.TEXT:
-            return TEXT_ENCODING
-        return None
+        pass
 
     @classmethod
     def write_snapshot_collection(
         cls, *, snapshot_collection: "SnapshotCollection"
     ) -> None:
-        filepath, data = (
-            snapshot_collection.location,
-            next(iter(snapshot_collection)).data,
-        )
-        if not isinstance(data, cls.get_supported_dataclass()):
-            error_text = gettext(
-                "Can't write non supported data. Expected '{}', got '{}'"
-            )
-            raise TypeError(
-                error_text.format(
-                    cls.get_supported_dataclass().__name__, type(data).__name__
-                )
-            )
-        with open(
-            filepath, f"w{cls._write_mode}", encoding=cls.get_write_encoding()
-        ) as f:
-            f.write(data)
+        pass
 
     @classmethod
     def __clean_filename(cls, filename: str) -> str:
-        max_filename_length = 255 - len(cls.file_extension or "")
-        exclude_chars = '\\/?*:|"<>'
-        exclude_categ = ("C",)
-        cleaned_filename = "".join(
-            c
-            for c in filename
-            if c not in exclude_chars
-            and not any(categ in category(c) for categ in exclude_categ)
-        )
-        return cleaned_filename[:max_filename_length]
+        pass
 
 
 class SingleFileAmberSnapshotExtension(SingleFileSnapshotExtension):
@@ -172,28 +114,15 @@ class SingleFileAmberSnapshotExtension(SingleFileSnapshotExtension):
         include: Optional["PropertyFilter"] = None,
         matcher: Optional["PropertyMatcher"] = None,
     ) -> "SerializedData":
-        return AmberDataSerializer.serialize(
-            data, exclude=exclude, include=include, matcher=matcher
-        )
+        pass
 
     def read_snapshot_data_from_location(
         self, *, snapshot_location: str, snapshot_name: str, session_id: str
     ) -> Optional["SerializableData"]:
-        snapshot_collection = AmberDataSerializer.read_file(snapshot_location)
-        if not snapshot_collection or not snapshot_collection.has_snapshots:
-            return None
-
-        snapshot = next(iter(snapshot_collection), None)
-        if not snapshot:
-            return None
-
-        if snapshot_collection.tainted or snapshot.tainted:
-            raise TaintedSnapshotError(snapshot_data=snapshot.data)
-
-        return snapshot.data
+        pass
 
     @classmethod
     def write_snapshot_collection(
         cls, *, snapshot_collection: "SnapshotCollection"
     ) -> None:
-        AmberDataSerializer.write_file(snapshot_collection, merge=False)
+        pass

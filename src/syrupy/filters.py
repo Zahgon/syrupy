@@ -27,8 +27,7 @@ def paths(*path_parts: str) -> "PropertyFilter":
     parts: set[str] = set(path_parts)
 
     def path_filter(*, prop: "PropertyName", path: "PropertyPath") -> bool:
-        path_str = ".".join(str(p) for p, _ in (*path, (prop, None)))
-        return path_str in parts
+        pass
 
     return path_filter
 
@@ -52,8 +51,7 @@ def paths_include(*path_parts: tuple[str, ...] | list[str]) -> "PropertyFilter":
             raise TypeError("Unexpected argument. Expected list/tuple.")
 
     def path_filter(*, prop: "PropertyName", path: "PropertyPath") -> bool:
-        path_tuple = tuple(str(p) for p, _ in (*path, (prop, None)))
-        return path_tuple in parts
+        pass
 
     return path_filter
 
@@ -67,6 +65,6 @@ def props(*prop_names: str) -> "PropertyFilter":
         raise TypeError("At least 1 prop name is required.")
 
     def prop_filter(*, prop: "PropertyName", path: "PropertyPath") -> bool:
-        return any(str(prop) == p for p in prop_names)
+        pass
 
     return prop_filter

@@ -20,15 +20,9 @@ class DataclassPlugin(AmberDataSerializerPlugin):
 
         Note: Excludes dataclass types themselves, which also yield True for is_dataclass.
         """
-        return dataclasses.is_dataclass(data) and not isinstance(data, type)
+        pass
 
     @classmethod
     def serialize(cls, data: "SerializableData", **kwargs: Any) -> str:
         """Serialize a dataclass instance into Amber format."""
-        keys = sorted([f.name for f in dataclasses.fields(data)])
-        return AmberDataSerializer.serialize_custom_iterable(
-            data=data,
-            resolve_entries=(keys, attr_getter, None),
-            separator="=",
-            **kwargs,
-        )
+        pass

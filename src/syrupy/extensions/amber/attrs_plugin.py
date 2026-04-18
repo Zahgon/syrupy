@@ -18,16 +18,9 @@ class AttrsPlugin(AmberDataSerializerPlugin):
     @classmethod
     def is_data_serializable(cls, data: "SerializableData") -> bool:
         """Check if the data is an attrs class instance."""
-        return attr.has(type(data))
+        pass
 
     @classmethod
     def serialize(cls, data: "SerializableData", **kwargs: Any) -> str:
         """Serialize an attrs class instance into Amber format."""
-        keys = sorted([a.name for a in attr.fields(type(data))])
-
-        return AmberDataSerializer.serialize_custom_iterable(
-            data=data,
-            resolve_entries=(keys, attr_getter, None),
-            separator="=",
-            **kwargs,
-        )
+        pass
